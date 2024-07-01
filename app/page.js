@@ -152,8 +152,6 @@ export default function Home() {
     }
   );
 
-
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">

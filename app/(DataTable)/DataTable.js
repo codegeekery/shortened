@@ -28,7 +28,6 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { toast } from "@/components/ui/use-toast"
 
 
 
@@ -44,27 +43,6 @@ const DataTable = ({ columns, data }) => {
         pageSize: 4,
     });
     const [columnVisibility, setColumnVisibility] = React.useState({})
-
-    const handleCopyUrl = (url) => {
-        navigator.clipboard.writeText(url).then(
-            () => {
-                toast({
-                    variant: "success",
-                    title: "Copied!",
-                    description: "URL copied to clipboard!",
-                })
-
-            },
-            (err) => {
-                console.error("Failed to copy:", err);
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to copy URL to clipboard!",
-                })
-            }
-        );
-    };
 
     const table = useReactTable({
         data,

@@ -1,14 +1,31 @@
 "use client"
 
-import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
 import { ArrowUpDown } from 'lucide-react'
+// import { CopyClipboard } from "@/utils/CopyClipboard"
+// import { DeleteAlert } from "@/utils/DeleteAlert"
+// import { useState } from 'react';
+import ActionCell from "@/utils/AuctionCell";
+
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
 
 export const Columns = [
+  {
+    id: "id",
+    accessorKey: "id",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+        >
+          ID
+        </Button>
+      )
+    },
+  },
   {
     id: "url",
     accessorKey: "url",
@@ -64,5 +81,9 @@ export const Columns = [
         </Button>
       )
     },
+  },
+  {
+    header: 'Actions',
+    cell: ({ row }) => <ActionCell row={row} />,
   },
 ];
