@@ -12,26 +12,49 @@ import {
 import { API_URL } from "@/utils/endpoint"
 import {toast} from "@/components/ui/use-toast"
 
-
+import {
+    useMutation,
+    useQueryClient,
+  } from '@tanstack/react-query'
 
 const DeleteAlert = ({ isOpen, onClose, _id }) => {
 
-    const handleDelete = async () => {
-        // Fetch DELETE request to the backend
-        const response = await fetch(`${API_URL}/DeleteUrl/${_id}`, {
-            credentials: 'include',
+    const queryClient = useQueryClient();
+
+    const deleteMutation = useMutation({
+        mutationKey: 'shortenedUrls', // Clave única para identificar esta mutación
+        mutationFn: async () => {
+          const response = await fetch(`${API_URL}/DeleteUrl/${_id}`, {
             method: 'DELETE',
-        });
-        // If the request was successful, close the alert
-        if (response.ok) {
+            credentials: 'include',
+          });
+          if (response.ok) {
             toast({
-                variant: 'success',
-                title: 'URL deleted',
-                description: `deleted with success`,
-            })
-            onClose();
-        }
-    }
+              variant: 'success',
+              title: 'URL deleted',
+              description: 'URL deleted successfully.',
+            });
+            return response.json();
+          } else {
+             toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Failed to delete URL.',
+             })
+          }
+        },
+        onSuccess: (data) => {
+          // Actualiza la caché después de eliminar la URL
+          queryClient.invalidateQueries(['shortenedUrls']);
+        },
+        onError: (error) => {
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to delete URL.',
+          });
+        },
+      });
 
 
     return (
@@ -49,7 +72,7 @@ const DeleteAlert = ({ isOpen, onClose, _id }) => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction variant='destructive' onClick={()=>{handleDelete();}}>
+                        <AlertDialogAction variant='destructive' onClick={()=>{deleteMutation.mutate()}}>
                             Continue
                         </AlertDialogAction>
                     </AlertDialogFooter>

@@ -1,7 +1,6 @@
 'use client'
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { z } from 'zod';
 import React, { useState, useEffect } from 'react';
 import { API_URL } from "@/utils/endpoint";
 import { toast } from "@/components/ui/use-toast"
@@ -9,10 +8,11 @@ import { useSession } from "@/lib/useSession";
 import { Loader } from 'lucide-react';
 import { DataTable } from "@/app/(DataTable)/DataTable";
 import { Columns } from "@/app/(DataTable)/Columns";
-import useSWR from 'swr';
+
+// TESTING TANSTACK QUERY
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 
-const urlSchema = z.string().url();
 
 const fetcher = async (url) => {
   const response = await fetch(url, {
@@ -28,71 +28,16 @@ const fetcher = async (url) => {
 
 export default function Home() {
   const [url, setUrl] = useState('');
-  const [shortenedUrl, setShortenedUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' && navigator.onLine);
 
+  // Tanstack Query
+  const queryClient = useQueryClient()
+
+  // Save URL in the URL State
   const handleChange = (e) => {
     setUrl(e.target.value);
     setError(''); // Clear error message on input change
-  }
-
-  const handleShorten = async () => {
-    try {
-      urlSchema.parse(url); // Validate URL
-      setLoading(true);
-      const response = await fetch(`${API_URL}/shorter`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      });
-
-      const data = await response.json();
-
-      switch (data.message) {
-        case "Success":
-          setError(''); // Clear error on successful response
-          setShortenedUrl(data.shortUrl);
-          toast({
-            variant: 'success',
-            title: 'URL shortened successfully',
-            description: `URL shortened with success`,
-          });
-          setLoading(false);
-          break;
-        case "Unauthorized":
-          setError('Login required for URL shortening service.');
-          setLoading(false);
-          break;
-        case "InternalServer":
-          setError('Internal Server Error');
-          setLoading(false);
-          break;
-        default:
-          setError('Error shortening URL');
-          setLoading(false);
-      }
-    } catch (error) {
-      setError('Invalid URL'); // Set error message for validation failure
-      setLoading(false);
-    }
-  }
-
-  const handleCopy = () => {
-    console.log(shortenedUrl)
-    navigator.clipboard.writeText(shortenedUrl);
-    toast({
-      variant: 'success',
-      title: 'Copied to clipboard',
-      description: `Shortened URL copied to clipboard`,
-    })
-
-    setShortenedUrl("")
-    setUrl("")
   }
 
   // LogOut Function
@@ -141,37 +86,76 @@ export default function Home() {
     }
   }
 
+  // Hook to get the session from the server of the user
   const { session, isLoading } = useSession();
 
-  // Getting Data from API
-  const { data } = useSWR(session?.id ? `${API_URL}/RetrieveUrls/${session.id}` : null, fetcher, {
-    refreshInterval: 30000,
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
+
+  // Tanstack Query Get All users URLS Table
+  const { data, isLoading: queryLoading } = useQuery({
+    queryKey: ['shortenedUrl'],
+    queryFn: () => fetcher(session?.id ? `${API_URL}/RetrieveUrls/${session.id}` : ''),
+    enabled: !!session?.id,
+    refetchInterval: 10000,
   });
 
-  useEffect(() => {
-    const updateOnlineStatus = () => {
-      setIsOnline(navigator.onLine);
-      if (!navigator.onLine) {
-        toast({
-          variant: 'info',
-          title: 'No internet connection',
-          description: 'You are currently offline. Please check your internet connection.',
-        });
+  // Tanstack Query Create Shortened URL
+  const createShortenedUrl = useMutation({
+    mutationKey: 'shortenedUrl',
+    mutationFn: async (url) => {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/shorter`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      switch (data.message) {
+        case "Success":
+          setError(''); // Clear error on successful response
+          toast({
+            variant: 'success',
+            title: 'URL shortened successfully',
+            description: `URL shortened with success`,
+          });
+          setLoading(false);
+          setUrl(''); // Clear input after successful response
+          queryClient.invalidateQueries('shortenedUrls'); // Invalidate the query to refetch the data
+          break;
+        case "Unauthorized":
+          setError('Login required for URL shortening service.');
+          setLoading(false);
+          break;
+        case "InternalServer":
+          setError('Internal Server Error');
+          setLoading(false);
+          break;
+        case "UrlsInvalid":
+          setError('Invalid URL');
+          setLoading(false);
+          break;
+        default:
+          setError('Error shortening URL');
+          setLoading(false);
       }
-    };
+    },
+    onError: (error) => {
+      //Captura el mensaje de error desde la mutación
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Internal Server Error',
+      })
+      setLoading(false);
+    },
+  });
 
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
 
-    return () => {
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
-    };
-  }, []);
-
-  if (isLoading) {
+  if (isLoading || queryLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader className="animate-spin" size={24} />
@@ -196,28 +180,23 @@ export default function Home() {
 
       <div className="flex flex-col">
         <div className="flex justify-center items-center">
-          {shortenedUrl ? (
-            <React.Fragment>
-              <div className="flex flex-col gap-2 items-center">
-                <Button onClick={handleCopy}>Copy URL Shortened</Button>
-              </div>
-            </React.Fragment>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <label htmlFor="URL">Copy and paste a URL</label>
-              <Input
-                id="URL"
-                placeholder="Enter a URL"
-                className="p-4 w-[400px] outline-none"
-                value={url}
-                onChange={handleChange}
-              />
-              <Button onClick={handleShorten} className>
-                {loading ? <Loader className=" animate-spin" size={20} /> : 'Shorten URL'}
-              </Button>
-              {error && <p className="text-red-500">{error}</p>}
-            </div>
-          )}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="URL">Paste the URL to be shortened</label>
+            <Input
+              id="URL"
+              placeholder="Enter a URL"
+              className="p-4 w-[400px] outline-none"
+              value={url}
+              onChange={handleChange}
+            />
+            <Button
+              onClick={() => {createShortenedUrl.mutate(url)}}
+              disabled={loading}
+            >
+              {loading ? <Loader className=" animate-spin" size={20} /> : 'Shorten URL'}
+            </Button>
+            {error && <p className="text-red-500">{error}</p>}
+          </div>
         </div>
 
         {/* Show Table Url Shortened */}
