@@ -31,8 +31,6 @@ import { Input } from "@/components/ui/input"
 
 
 
-
-
 const DataTable = ({ columns, data }) => {
 
     const [sorting, setSorting] = React.useState([])
