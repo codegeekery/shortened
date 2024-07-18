@@ -2,15 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from 'zod';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_URL } from "@/utils/endpoint";
 import { toast } from "@/components/ui/use-toast"
 import { useSession } from "@/lib/useSession";
-import {
-  Loader
-} from 'lucide-react'
-import { DataTable } from "@/app/(DataTable)/DataTable"
-import { Columns } from "@/app/(DataTable)/Columns"
+import { Loader } from 'lucide-react';
+import { DataTable } from "@/app/(DataTable)/DataTable";
+import { Columns } from "@/app/(DataTable)/Columns";
 import useSWR from 'swr';
 
 const urlSchema = z.string().url();
@@ -32,6 +30,7 @@ export default function Home() {
   const [shortenedUrl, setShortenedUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const handleChange = (e) => {
     setUrl(e.target.value);
@@ -61,7 +60,7 @@ export default function Home() {
             variant: 'success',
             title: 'URL shortened successfully',
             description: `URL shortened with success`,
-          })
+          });
           setLoading(false);
           break;
         case "Unauthorized":
@@ -76,14 +75,12 @@ export default function Home() {
           setError('Error shortening URL');
           setLoading(false);
       }
-
-
-
     } catch (error) {
       setError('Invalid URL'); // Set error message for validation failure
       setLoading(false);
     }
   }
+
   const handleCopy = () => {
     console.log(shortenedUrl)
     navigator.clipboard.writeText(shortenedUrl);
@@ -95,7 +92,6 @@ export default function Home() {
 
     setShortenedUrl("")
     setUrl("")
-
   }
 
   // LogOut Function
@@ -136,21 +132,43 @@ export default function Home() {
       }
 
     } catch (error) {
-
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: 'An error occurred during logout',
+      })
     }
   }
-
-
 
   const { session, isLoading } = useSession();
 
   // Getting Data from API
-  const { data} = useSWR(session?.id ? `${API_URL}/RetrieveUrls/${session.id}` : null, fetcher, {
-      refreshInterval: 30000,
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-    }
-  );
+  const { data } = useSWR(session?.id ? `${API_URL}/RetrieveUrls/${session.id}` : null, fetcher, {
+    refreshInterval: 30000,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  });
+
+  useEffect(() => {
+    const updateOnlineStatus = () => {
+      setIsOnline(navigator.onLine);
+      if (!navigator.onLine) {
+        toast({
+          variant: 'info',
+          title: 'No internet connection',
+          description: 'You are currently offline. Please check your internet connection.',
+        });
+      }
+    };
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -162,7 +180,6 @@ export default function Home() {
 
   return (
     <>
-
       {session ? (
         <div className="flex items-center gap-4 justify-end p-2">
           <p className="text-black">{`Welcome ${session?.username}`}</p>
@@ -176,7 +193,6 @@ export default function Home() {
         </div>
       )}
 
-
       <div className="flex flex-col">
         <div className="flex justify-center items-center">
           {shortenedUrl ? (
@@ -184,10 +200,7 @@ export default function Home() {
               <div className="flex flex-col gap-2 items-center">
                 <Button onClick={handleCopy}>Copy URL Shortened</Button>
               </div>
-
-
             </React.Fragment>
-
           ) : (
             <div className="flex flex-col gap-2">
               <label htmlFor="URL">Copy and paste a URL</label>
@@ -211,7 +224,6 @@ export default function Home() {
           <DataTable columns={Columns} data={data?.shortened} />
         </div>
       </div>
-
     </>
   );
 }

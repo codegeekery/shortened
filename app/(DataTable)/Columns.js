@@ -31,12 +31,19 @@ export const Columns = [
     accessorKey: "url",
     header: ({ column }) => {
       return (
-        <Button
-          variant="ghost"
-        >
+        <Button variant="ghost">
           Origin Url
         </Button>
-      )
+      );
+    },
+    cell: ({ getValue }) => {
+      const url = getValue();
+      const shortenedUrl = url.length > 30 ? `${url.slice(0, 30)}...` : url;
+      return (
+        <div className='cursor-pointer' title={url}>
+          {shortenedUrl}
+        </div>
+      );
     },
   },
   {
