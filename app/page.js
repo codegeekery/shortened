@@ -31,7 +31,7 @@ export default function Home() {
   const [shortenedUrl, setShortenedUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' && navigator.onLine);
 
   const handleChange = (e) => {
     setUrl(e.target.value);
