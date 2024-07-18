@@ -1,9 +1,11 @@
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
 import { API_URL } from '@/utils/endpoint';
 import { useParams } from 'next/navigation';
+import {
+    useQuery,
+} from '@tanstack/react-query';
 
 // Fetcher function to be used with SWR
 const fetcher = (...args) => fetch(...args).then(res => res.json());
@@ -11,7 +13,11 @@ const fetcher = (...args) => fetch(...args).then(res => res.json());
 export default function Page() {
     const { shortid } = useParams();
     const router = useRouter();
-    const { data, error } = useSWR(`${API_URL}/GetShorter/${shortid}`, fetcher, { revalidateOnFocus: false });
+    // const { data, error } = useSWR(`${API_URL}/GetShorter/${shortid}`, fetcher, { revalidateOnFocus: false });
+    const { data, error } = useQuery({
+        queryKey: ['GetShorter'],
+        queryFn: () => fetcher(`${API_URL}/GetShorter/${shortid}`),
+    });
 
     useEffect(() => {
         if (data) {
