@@ -200,6 +200,7 @@ export default function Auth() {
                                     type="password"
                                     className='outline-none p-2'
                                     name="password"
+                                    placeholder="Password"
                                     value={LoginState.password}
                                     onChange={handleStateSaving}
                                     
