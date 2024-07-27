@@ -10,7 +10,6 @@ const ActionCell = ({ row }) => {
   return (
     <div className="flex flex-col gap-2">
       <Button
-        variant='black'
         onClick={() => CopyClipboard(row.original.shortUrl)}
       >
         Copy URL
