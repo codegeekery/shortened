@@ -1,6 +1,6 @@
 'use client'
 // Import Endpoint
-import { API_URL } from "@/utils/endpoint";
+import { API_URL, HOME } from "@/utils/endpoint";
 // Import useState
 import React, { useState, useEffect } from "react";
 // Import zodResolver
@@ -26,7 +26,7 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { toast } from "@/components/ui/use-toast";
-import { useSearchParams,useRouter } from "next/navigation";
+import { useSearchParams} from "next/navigation";
 
 
 
@@ -43,8 +43,6 @@ export default function Page() {
 
     const Payload = searchParams.get('payload');
 
-
-    const router = useRouter();
 
     const [Loading, setLoading] = useState(false);
 
@@ -74,9 +72,7 @@ export default function Page() {
                 // Components 
                 setLoading(false);
                 toast({ variant: "success", title: "Your account has been verified successfully", description: data.message });
-                setInterval(() => {
-                    router.push(`/auth`);
-                }, 2000)
+                window.location.href = `${HOME}/auth`;
                 break;
             case 400:
                 // Components 
@@ -194,7 +190,7 @@ export default function Page() {
                                 <div
                                     className="text-sm text-slate-500 mt-4">
                                     Didn&apos;t receive code?
-                                    <Button  variant='ghost' onClick={() => { ResendOTP(); }}>
+                                    <Button variant='ghost' onClick={() => { ResendOTP(); }}>
                                         {disabled ? `Resend Code (${Math.floor(countdown / 60)}:${countdown % 60})` : 'Resend Code'}
                                     </Button>
                                 </div>
