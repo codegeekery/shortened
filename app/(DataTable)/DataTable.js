@@ -28,6 +28,8 @@ import {
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+// BulkActionCell
+import BulkActionCell from "@/utils/BulkAuction"
 
 
 
@@ -41,6 +43,7 @@ const DataTable = ({ columns, data }) => {
         pageSize: 4,
     });
     const [columnVisibility, setColumnVisibility] = React.useState({})
+    const [rowSelection, setRowSelection] = React.useState({})
 
     const table = useReactTable({
         data,
@@ -54,13 +57,15 @@ const DataTable = ({ columns, data }) => {
         onPaginationChange: setPagination,
         onColumnVisibilityChange: setColumnVisibility,
         onColumnFiltersChange: setColumnFilters,
+        onRowSelectionChange: setRowSelection,
         //no need to pass pageCount or rowCount with client-side pagination as it is calculated automatically
         state: {
             sorting,
             globalFilter,
             pagination,
             columnVisibility,
-            columnFilters
+            columnFilters,
+            rowSelection,
 
         },
         // autoResetPageIndex: false, // turn off page index reset when sorting or filtering
@@ -72,20 +77,20 @@ const DataTable = ({ columns, data }) => {
         <>
 
             <div className="rounded-md border">
-                <div className="flex items-center py-4 p-2">
+                <div className="flex items-center py-4 p-2 gap-2">
                     <div className="flex gap-3">
                         {/* Search */}
                         <Input
                             placeholder="Search..."
                             value={table.getState().globalFilter}
                             onChange={(event) => table.setGlobalFilter(event.target.value)}
-                            className="w-[140px]"
+                            className="w-[200px] p-2"
                         />
                     </div>
                     {/* Select Columns */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="black" className="ml-3">
+                            <Button className="ml-3">
                                 Select Columns
                             </Button>
                         </DropdownMenuTrigger>
@@ -111,6 +116,12 @@ const DataTable = ({ columns, data }) => {
                                 })}
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    {/* BulkActions */}
+                    <BulkActionCell
+                        selectedRowIds={table.getFilteredSelectedRowModel().rows.map((row) => row.original.id)}
+                        onSuccess={() => table.setRowSelection({})}
+                        
+                    />
                 </div>
                 <Table>
                     <TableHeader>
@@ -155,15 +166,23 @@ const DataTable = ({ columns, data }) => {
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex justify-center p-2 gap-2">
-                <span className="flex justify-center items-center gap-2">
-                    <div>Page</div>
-                    <strong>
-                        {table.getState().pagination.pageIndex + 1} of{' '}
-                        {table.getPageCount().toLocaleString()}
-                    </strong>
-                </span>
-                <div className="flex gap-2 justify-center lg:justify-between lg:order-2 items-center">
+            <div className="flex flex-col items-center gap-2 md:flex-row md:justify-around md:items-center p-2">
+                <div className='flex items-center gap-3'>
+                    <span className="flex items-center gap-2">
+                        <div>Page</div>
+                        <strong>
+                            {table.getState().pagination.pageIndex + 1} of{' '}
+                            {table.getPageCount().toLocaleString()}
+                        </strong>
+                    </span>
+                    <div className='flex items-center gap-2'>
+                        <div className="flex-1 items-center text-sm text-muted-foreground">
+                            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                            {table.getFilteredRowModel().rows.length} row(s) selected
+                        </div>
+                    </div>
+                </div>
+                <div className="flex justify-end items-center gap-2">
                     <Button
                         size="sm"
                         onClick={() => table.previousPage()}
@@ -179,7 +198,7 @@ const DataTable = ({ columns, data }) => {
                         Next
                     </Button>
                     {/* Show Rows */}
-                    <div>
+                    <div className=''>
                         <select
                             value={table.getState().pagination.pageSize}
                             onChange={e => {

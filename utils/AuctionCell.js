@@ -1,11 +1,15 @@
-import { useState } from 'react';
+
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { CopyClipboard } from "@/utils/CopyClipboard";
-import { DeleteAlert } from "@/utils/DeleteAlert";
+import {
+  UpdatedAlert
+} from "@/utils/UpdatedAlert";
+
 
 const ActionCell = ({ row }) => {
-    
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+
+  const [isUpdateAlertOpen, setIsUpdateAlertOpen] = React.useState(false);
 
   return (
     <div className="flex flex-col gap-2">
@@ -15,17 +19,15 @@ const ActionCell = ({ row }) => {
         Copy URL
       </Button>
       <Button
-        variant="destructive"
-        className='w-full'
-        onClick={()=> {setIsDeleteAlertOpen(true)}}
-      >
-        Delete
-      </Button>
+        onClick={() => setIsUpdateAlertOpen(true)}
 
-      {/* Dialog Alert */}
-      <DeleteAlert
-        isOpen={isDeleteAlertOpen}
-        onClose={() => {setIsDeleteAlertOpen(false)}}
+      >
+        Edit
+      </Button>
+      {/* AlertOpen */}
+      <UpdatedAlert
+        isOpen={isUpdateAlertOpen}
+        onClose={() => setIsUpdateAlertOpen(false)}
         _id={row.original.id}
       />
     </div>
