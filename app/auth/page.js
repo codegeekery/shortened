@@ -96,6 +96,9 @@ export default function Auth() {
                     password: '',
                     username: ''
                 })
+                setInterval(() => {
+                    window.location.href = `/Verified?${data.params}`
+                }, 900)
             } else {
                 setError(data.errors)
                 setLoading(false)
@@ -181,7 +184,7 @@ export default function Auth() {
                                     onChange={handleStateSaving}
                                     
                                 />
-                                {error.email && error.email.map((err, index) => (
+                                {error?.email && error.email.map((err, index) => (
                                     <p key={index} className='text-red-500 text-sm'>{err}</p>
                                 ))}
                             </div>
@@ -205,7 +208,7 @@ export default function Auth() {
                                     onChange={handleStateSaving}
                                     
                                 />
-                                {error.password && error.password.map((err, index) => (
+                                {error?.password && error.password.map((err, index) => (
                                     <p key={index} className='text-red-500 text-sm'>{err}</p>
                                 ))}
                             </div>
@@ -240,7 +243,7 @@ export default function Auth() {
                                     value={RegisterState.email}
                                     onChange={handleStateSaving}
                                 />
-                                {error.email && error.email.map((err, index) => (
+                                {error?.email && error.email.map((err, index) => (
                                     <p key={index} className='text-red-500 text-sm'>{err}</p>
                                 ))}
                             </div>
@@ -255,7 +258,7 @@ export default function Auth() {
                                     value={RegisterState.username}
                                     onChange={handleStateSaving}
                                 />
-                                {error.username && error.username.map((err, index) => (
+                                {error?.username && error.username.map((err, index) => (
                                     <p key={index} className='text-red-500 text-sm'>{err}</p>
 
                                 ))}
@@ -271,7 +274,7 @@ export default function Auth() {
                                     value={RegisterState.password}
                                     onChange={handleStateSaving}
                                 />
-                                {error.password && error.password.map((err, index) => (
+                                {error?.password && error.password.map((err, index) => (
                                     <p key={index} className='text-red-500 text-sm'>{err}</p>
                                 ))}
                             </div>

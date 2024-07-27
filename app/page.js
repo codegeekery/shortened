@@ -95,7 +95,7 @@ export default function Home() {
     queryKey: ['shortenedUrl'],
     queryFn: () => fetcher(session?.id ? `${API_URL}/RetrieveUrls/${session.id}` : ''),
     enabled: !!session?.id,
-    refetchInterval: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000,
   });
 
   // Tanstack Query Create Shortened URL
