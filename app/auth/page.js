@@ -5,13 +5,16 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { API_URL } from "@/utils/endpoint"
+import { API_URL, HOME } from "@/utils/endpoint"
 import { toast } from "@/components/ui/use-toast"
 import {
     Loader
 } from 'lucide-react'
+import { useRouter } from "next/navigation"
 
 export default function Auth() {
+
+    const router = useRouter()
 
     // state for switching between login and register
     const [isLogin, setIsLogin] = React.useState(true)
@@ -97,7 +100,7 @@ export default function Auth() {
                     username: ''
                 })
                 setInterval(() => {
-                    window.location.href = `/Verified?${data.params}`
+                    router.push(`${HOME}/Verified?${data.params}`)
                 }, 900)
             } else {
                 setError(data.errors)

@@ -1,8 +1,6 @@
 'use client'
 // Import Endpoint
 import { API_URL } from "@/utils/endpoint";
-// Import useRouter
-import { useRouter } from "next/navigation";
 // Import useState
 import React, { useState, useEffect } from "react";
 // Import zodResolver
@@ -28,7 +26,7 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { toast } from "@/components/ui/use-toast";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams,useRouter } from "next/navigation";
 
 
 
