@@ -190,7 +190,7 @@ export default function Page() {
                                 <div
                                     className="text-sm text-slate-500 mt-4">
                                     Didn&apos;t receive code?
-                                    <Button variant='ghost' onClick={() => { ResendOTP(); }}>
+                                    <Button disabled={!disabled} variant='ghost' onClick={() => { ResendOTP(); }}>
                                         {disabled ? `Resend Code (${Math.floor(countdown / 60)}:${countdown % 60})` : 'Resend Code'}
                                     </Button>
                                 </div>

@@ -195,7 +195,7 @@ export default function Auth() {
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Password</Label>
                                     <Link
-                                        href="/forgot-password"
+                                        href="/auth/recover"
                                         className="ml-auto inline-block text-sm underline"
                                     >
                                         Forgot your password?
